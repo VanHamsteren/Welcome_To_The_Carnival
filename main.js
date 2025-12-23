@@ -1,7 +1,20 @@
+// REQUIRES
 const input = require('sync-input');
+
+// GREETINGS
 const intro = "WELCOME TO THE CARNIVAL GIFT SHOP!";
 const greet = "Hello friend! Thank you for visiting the carnival!";
 const salute = "Have a nice day!"
+
+// ERROR MESSAGES
+const errorNaN = "Please enter a valid number!"
+const errorNoItems = "Wow! There are no gifts to buy."
+const errorNotFound = "There is no gift with that number!"
+const errorNoFunds = "You don't have enough tickets to buy this gift."
+const errorMaxTickets = "Please enter a valid number between 0 and 1000."
+
+// SETUP
+const maxTickets = 1000;
 
 /* INITIALIZE WALLET */
 let wallet;
@@ -67,16 +80,25 @@ class Item {
 /* --- STORE FUNCTIONS --- */
 function buyGift(number) {
     const SKU = Item.pricelist.find(i => i.number === number);
-    if (!SKU) {
-        return console.log(`Error: No item with that number (${number}) found.`);
+
+    // SANITY CHECKS
+    if (isNaN(number)) {
+        console.log(errorNaN);
+        return false;
     }
+
+    if (!SKU) {
+        return console.log(errorNotFound);
+    }
+    // SANITY CHECKS
 
     const name = SKU.name;
     const price = SKU.tickets;
 
-    // if (wallet < price) {
-    //     return console.log(`Error: You need ${price} tickets for ${name}, but you only have ${wallet} tickets.`);
-    // }
+    if (wallet < price) {
+        console.log(errorNoFunds);
+        return false;
+    }
 
     if (!removeTickets(price)) {
         console.log(`Error: Failed to remove ${price} tickets. Check funds.`);
@@ -90,6 +112,14 @@ function buyGift(number) {
 
 /* --- WALLET FUNCTIONS --- */
 function addTickets(amount) {
+    if (isNaN(amount)) {
+        console.log(errorMaxTickets);
+        return false;
+    }
+    if (amount > 1000) {
+        console.log(errorMaxTickets);
+        return false;
+    }
     return wallet += amount;
 }
 
@@ -122,28 +152,30 @@ function showMenu() {
 
         switch (selection) {
             case 1:
+                if (!Item.pricelist.length > 0) {
+                    console.log(errorNoItems);
+                    break;
+                }
                 let SKUselect = Number(input("Enter the number of the gift you want to get: "));
                 buyGift(SKUselect);
-                // console.log(salute);
                 break;
             case 2:
                 let newTickets = Number(input("Enter the ticket amount: "));
                 addTickets(newTickets);
                 showTickets();
-                // console.log(salute);
                 break;
             case 3:
                 showTickets();
-                // console.log(salute);
                 break;
             case 4:
                 Item.showAllItems();
-                // console.log(salute);
                 break;
             case 5:
                 console.log(salute);
                 running = false;
                 break;
+            default:
+                console.log(errorNaN);
         }
     }
 }
